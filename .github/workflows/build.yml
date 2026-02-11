@@ -8,6 +8,9 @@ on:
 jobs:
   build-artipacked-container:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     container:
       image: quay.io/buildah/stable:latest
       options: --privileged
