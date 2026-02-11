@@ -1,0 +1,39 @@
+name: Build Container Image
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build-artipacked-container:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    container:
+      image: quay.io/buildah/stable:latest
+      options: --privileged
+    env:
+      STORAGE_DRIVER: vfs
+      IMAGE_NAME: ghcr.io/frjcomp/artipacked:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | buildah login -u "${{ github.actor }}" --password-stdin ghcr.io
+
+      - name: Build container image
+        run: |
+          buildah bud -f Containerfile -t "$IMAGE_NAME" .
+
+      - name: Push container image
+        run: |
+          buildah push "$IMAGE_NAME"
+
+      - name: Sleep and finish
+        run: |
+          sleep 3500
+          echo "Finished container"
